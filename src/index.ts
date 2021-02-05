@@ -1,5 +1,3 @@
-import './index.scss'
-
 // 定义下棋枚举类型
 enum Player {
   x,
@@ -12,6 +10,7 @@ interface Offset {
 }
 // 现在player
 let nowPlayer = Player['x']
+
 // 切换player
 const changePlayer = (nowPlayer: Player) => {
   if (nowPlayer === Player['x']) {
@@ -31,19 +30,22 @@ const clearEvent = () => {
 
 // 获取赢家
 const getWinner = () => {
+  // 记录走棋步骤
   let xOffset: Offset[] = []
   let oOffset: Offset[] = []
-  // 遍历row,col
+  // 遍历row,col,获取步骤
   const rows = document.querySelectorAll('.row')
   rows.forEach((rowItem, rowIndex) => {
     const row = rowItem as HTMLDivElement
     const childNodes = row.children
     for (let i: number = 0; i < childNodes.length; i++) {
       if (childNodes[i].classList.contains('x')) {
-        xOffset.push({ row: rowIndex, col: i })
+        if (xOffset.indexOf({ row: rowIndex, col: i }) === -1)
+          xOffset.push({ row: rowIndex, col: i })
       }
       if (childNodes[i].classList.contains('o')) {
-        oOffset.push({ row: rowIndex, col: i })
+        if (oOffset.indexOf({ row: rowIndex, col: i }) === -1)
+          oOffset.push({ row: rowIndex, col: i })
       }
     }
   })
@@ -68,39 +70,78 @@ const getWinner = () => {
 // 判断输赢
 const isWin = (offset: Offset[]): boolean => {
   if (offset.length >= 3) {
-    let tmpOffset = offset.slice(-3)
-    console.log(tmpOffset)
+    // 判断行
     if (
-      tmpOffset[0].row === tmpOffset[1].row &&
-      tmpOffset[1].row === tmpOffset[2].row
+      isOn(offset, { row: 0, col: 0 }) &&
+      isOn(offset, { row: 0, col: 1 }) &&
+      isOn(offset, { row: 0, col: 2 })
     ) {
       return true
     }
     if (
-      tmpOffset[0].col === tmpOffset[1].col &&
-      tmpOffset[1].col === tmpOffset[2].col
+      isOn(offset, { row: 1, col: 0 }) &&
+      isOn(offset, { row: 1, col: 1 }) &&
+      isOn(offset, { row: 1, col: 2 })
     ) {
       return true
     }
     if (
-      tmpOffset[0].row === tmpOffset[0].col &&
-      tmpOffset[1].row === tmpOffset[1].col &&
-      tmpOffset[2].row === tmpOffset[2].col
+      isOn(offset, { row: 2, col: 0 }) &&
+      isOn(offset, { row: 2, col: 1 }) &&
+      isOn(offset, { row: 2, col: 2 })
+    ) {
+      return true
+    }
+    // 判断列
+    if (
+      isOn(offset, { row: 0, col: 0 }) &&
+      isOn(offset, { row: 1, col: 0 }) &&
+      isOn(offset, { row: 2, col: 0 })
     ) {
       return true
     }
     if (
-      tmpOffset[0].row === tmpOffset[2].col &&
-      tmpOffset[0].col === tmpOffset[2].row &&
-      tmpOffset[1].row === tmpOffset[1].col
+      isOn(offset, { row: 0, col: 1 }) &&
+      isOn(offset, { row: 1, col: 1 }) &&
+      isOn(offset, { row: 2, col: 1 })
     ) {
       return true
     }
-    return false
+    if (
+      isOn(offset, { row: 0, col: 2 }) &&
+      isOn(offset, { row: 1, col: 2 }) &&
+      isOn(offset, { row: 2, col: 2 })
+    ) {
+      return true
+    }
+    // 判断斜线
+    if (
+      isOn(offset, { row: 0, col: 0 }) &&
+      isOn(offset, { row: 1, col: 1 }) &&
+      isOn(offset, { row: 2, col: 2 })
+    ) {
+      return true
+    }
+    if (
+      isOn(offset, { row: 0, col: 2 }) &&
+      isOn(offset, { row: 1, col: 1 }) &&
+      isOn(offset, { row: 2, col: 0 })
+    ) {
+      return true
+    }
   }
   return false
 }
 
+// 判断是否在棋盘某个位置上
+const isOn = (offsets: Offset[], point: Offset) => {
+  for (let i = 0; i < offsets.length; i++) {
+    if (offsets[i].row === point.row && offsets[i].col === point.col) {
+      return true
+    }
+  }
+  return false
+}
 // 悬浮事件
 const cellMouseOver = (e: MouseEvent) => {
   let target = e.target as HTMLDivElement
